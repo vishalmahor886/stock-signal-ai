@@ -1,44 +1,31 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 from fastapi.responses import JSONResponse
-import yfinance as yf
-
-from backend.services.indicators import get_latest_summary
-from backend.services.signal_generator import generate_signal_for_symbol 
 from backend.builder.builder_graph import graph
-
-
 router = APIRouter()
 
 @router.get("/{symbol}")
-def get_signal(symbol:str):
+async def get_news(symbol: str, limit: int = 10):
     """
-    On-demand signal generation for a specific symbol.
+    Fetch latest news for a given symbol
     """
-
     try:
-        ## Technical Signal
 
-        graph_result=graph.invoke({"symbol":symbol})
-        tech_signal=graph_result.get("tech_signal")
-        indicator_summary=graph_result.get("indicator_summary")
-        technical_analysis_ai_response=graph_result.get("ai_response")
-        news_sentiment=graph_result.get("news_sentiment")
+        result = graph.invoke({
+            "symbol":symbol
+        })
 
-        
         return JSONResponse(
             status_code=status.HTTP_200_OK,
-            content= {
+            content={
                 "symbol": symbol,
                 "status": status.HTTP_200_OK,
                 "data": {
-                    "technical_signal": tech_signal,
-                    "indicator_summary": indicator_summary,
-                    "ai_response": technical_analysis_ai_response,
                     "news_sentiment": news_sentiment,
                 },
             },
             media_type="application/json"
         )
+
     except HTTPException as e:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -59,3 +46,10 @@ def get_signal(symbol:str):
             },
             media_type="application/json"
         )
+
+
+
+
+
+    
+        

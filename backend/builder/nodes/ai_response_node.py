@@ -1,6 +1,6 @@
 from backend.builder.state import TradingState
 from backend.prompts.analysis_prompt import ANALYSIS_PROMPT
-from backend.ai_models.hf_ai_model import technical_llm, agentic_llm 
+from backend.ai_models.hf_ai_model import agentic_llm 
 import json
 
 def ai_response_node(state:TradingState):
