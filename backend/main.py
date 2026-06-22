@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api.routers.signal_api import router as signal_router
-from backend.api.routers.news_analysis_api import router as news_analysis_router
+from backend.services.financial_statement_service import get_financial_statement_for_symbol
 
 app = FastAPI()
 
@@ -19,3 +19,7 @@ def health():
 
 
 app.include_router(signal_router, prefix="/api/signals", tags=["signal"])
+
+@app.get("/get_financial_statement/{symbol}")
+def financial_statement(symbol:str):
+    return get_financial_statement_for_symbol(symbol)

@@ -1,9 +1,9 @@
-from backend.builder.state import TradingState
+"""from backend.builder.state import TradingState
 from backend.prompts.analysis_prompt import ANALYSIS_PROMPT
 from backend.ai_models.hf_ai_model import agentic_llm 
 import json
 
-def ai_response_node(state:TradingState):
+def ai_response_agent(state:TradingState):
     try:
         tech_signal=state.get("tech_signal",{})
         indicator_summary=state.get("indicator_summary",{})
@@ -77,6 +77,29 @@ def ai_response_node(state:TradingState):
         ai_signal = llm.invoke(prompt)
         ai_response = json.loads(ai_signal.content.strip().replace("```json","").replace("```",""))
         return {"ai_response": ai_response}
+    except Exception as e:
+        return {
+            "ai_response": {
+                "decision": "NA",
+                "confidence": 0,
+                "entry_price": 0,
+                "stop_loss": 0,
+                "target_price": 0,
+                "holding_days": 0,
+                "reasoning": f"Failed to generate AI response {e}"
+            }
+        }
+
+"""
+
+from backend.builder.state import TradingState
+from backend.prompts.analysis_prompt import ANALYSIS_PROMPT
+from backend.ai_models.hf_ai_model import agentic_llm 
+import json
+
+def ai_response_agent(state:TradingState):
+    try:
+        pass
     except Exception as e:
         return {
             "ai_response": {

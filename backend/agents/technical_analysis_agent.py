@@ -4,7 +4,7 @@ from backend.services.indicators import get_latest_summary
 import yfinance as yf
 
 
-def technical_analysis_node(state:TradingState):
+def technical_analysis_agent(state:TradingState):
     symbol=state["symbol"]
     yf_symbol = symbol if "." in symbol else f"{symbol}.NS"
     df = yf.Ticker(yf_symbol).history(period="1y")

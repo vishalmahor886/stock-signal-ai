@@ -6,6 +6,7 @@ class TradingState(TypedDict):
     indicator_summary: dict
     ai_response: dict
     news_sentiment: dict
+    financial_statement: dict
 
 
     

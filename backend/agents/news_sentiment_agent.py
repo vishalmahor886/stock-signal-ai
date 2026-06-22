@@ -1,9 +1,10 @@
 from backend.services.news_service import get_news_sentiment_for_symbol
 from backend.ai_models.hf_ai_model import agentic_llm
 from backend.prompts.news_prompt import NEWS_PROMPT
+from backend.builder.state import TradingState
 import json
 
-def news_sentiment_node(state:dict):
+def news_sentiment_agent(state:TradingState):
     news_sentiment={}
     try:
         symbol = state.get("symbol")
