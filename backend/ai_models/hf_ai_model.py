@@ -13,3 +13,13 @@ def agentic_llm():
         temperature=0.2,
     )
     return ChatHuggingFace(llm=llm)
+
+def agentic_llm2():
+    llm = HuggingFaceEndpoint(
+        repo_id="deepseek-ai/DeepSeek-V4-Flash",  
+        task="text-generation",
+        huggingfacehub_api_token=os.getenv("HF_ACCESS_TOKEN"), 
+        max_new_tokens=4096,
+        temperature=0.2,
+    )
+    return ChatHuggingFace(llm=llm)

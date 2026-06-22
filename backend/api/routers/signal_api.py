@@ -1,10 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
-import yfinance as yf
 
-from backend.services.indicators import get_latest_summary
-from backend.services.signal_generator import generate_signal_for_symbol 
-from backend.agents.financial_statement_agent import financial_statement_agent
 from backend.builder.builder_graph import graph
 
 
@@ -23,9 +19,10 @@ def get_signal(symbol:str):
         graph_result=graph.invoke({"symbol":symbol})
         tech_signal=graph_result.get("tech_signal")
         indicator_summary=graph_result.get("indicator_summary")
-       # technical_analysis_ai_response=graph_result.get("ai_response")
         news_sentiment=graph_result.get("news_sentiment")
         financial_statement=graph_result.get("financial_statement")
+        financial_ratio=graph_result.get("financial_ratio")
+        ai_response = graph_result.get("ai_response")
 
         
         return JSONResponse(
@@ -36,9 +33,10 @@ def get_signal(symbol:str):
                 "data": {
                     "technical_signal": tech_signal,
                     "indicator_summary": indicator_summary,
-                    #"ai_response": technical_analysis_ai_response,
+                    "financial_ratio": financial_ratio,
                     "financial_statement": financial_statement,
                     "news_sentiment": news_sentiment,
+                    "ai_respones": ai_response
                     
                 },  
             },
