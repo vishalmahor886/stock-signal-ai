@@ -16,7 +16,7 @@ def agentic_llm():
 
 def agentic_llm2():
     llm = HuggingFaceEndpoint(
-        repo_id="deepseek-ai/DeepSeek-V4-Flash",  
+        repo_id="meta-llama/Llama-3.1-8B-Instruct",  
         task="text-generation",
         huggingfacehub_api_token=os.getenv("HF_ACCESS_TOKEN"), 
         max_new_tokens=4096,

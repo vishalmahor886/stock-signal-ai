@@ -1,11 +1,12 @@
-import streamlit as st
-import requests
-import pandas as pd
-import plotly.graph_objects as go
+# app.py
 
-# ==========================
+import streamlit as st
+import pandas as pd
+import requests
+
+# =====================================================
 # PAGE CONFIG
-# ==========================
+# =====================================================
 
 st.set_page_config(
     page_title="AI Trading Dashboard",
@@ -13,253 +14,459 @@ st.set_page_config(
     layout="wide"
 )
 
-# ==========================
-# CUSTOM CSS
-# ==========================
-
-st.markdown("""
-<style>
-.main {
-    background-color: #0e1117;
-}
-
-.buy-box {
-    background-color: #0f5132;
-    padding: 20px;
-    border-radius: 15px;
-    color: white;
-}
-
-.sell-box {
-    background-color: #842029;
-    padding: 20px;
-    border-radius: 15px;
-    color: white;
-}
-
-.hold-box {
-    background-color: #664d03;
-    padding: 20px;
-    border-radius: 15px;
-    color: white;
-}
-
-.metric-card {
-    background-color: #1c1f26;
-    padding: 15px;
-    border-radius: 12px;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ==========================
-# HEADER
-# ==========================
-
-st.title("🚀 AI Trading Dashboard")
-st.caption("Technical + News + AI Sentiment Analysis")
-
-# ==========================
+# =====================================================
 # SIDEBAR
-# ==========================
+# =====================================================
 
-st.sidebar.header("Stock Search")
+st.sidebar.title("📊 Stock Analysis")
 
 symbol = st.sidebar.text_input(
-    "Stock Symbol",
-    value="RELIANCE"
+    "Enter Symbol",
+    value="reliance"
+).lower()
+
+refresh = st.sidebar.button("🔄 Refresh")
+
+# =====================================================
+# API
+# =====================================================
+
+@st.cache_data(ttl=60)
+def load_data(symbol):
+
+    try:
+
+        api_url = f"http://127.0.0.1:8000/api/signals/{symbol}"
+
+        response = requests.get(
+            api_url,
+            timeout=120
+        )
+
+        response.raise_for_status()
+
+        return response.json()
+
+    except Exception as e:
+
+        st.error(f"API Error: {e}")
+        return {}
+
+if refresh:
+    st.cache_data.clear()
+
+data = load_data(symbol)
+
+if not data:
+    st.stop()
+
+# =====================================================
+# RESPONSE PARSING
+# =====================================================
+
+result = data.get("data", data)
+
+technical = result.get("technical_signal", {})
+indicator = result.get("indicator_summary", {})
+ratios = result.get("financial_ratio", {})
+financials = result.get("financial_statement", {})
+news = result.get("news_sentiment", {})
+ai = result.get("ai_respones", {})
+
+# =====================================================
+# HEADER
+# =====================================================
+
+st.title("📈 AI Trading Analysis Dashboard")
+
+st.subheader(
+    f"Stock : {data.get('symbol', symbol).upper()}"
 )
 
-backend_url = st.sidebar.text_input(
-    "Backend URL",
-    value="http://localhost:8000/api/signals"
+# =====================================================
+# AI RECOMMENDATION
+# =====================================================
+
+st.markdown("---")
+st.header("🤖 AI Recommendation")
+
+c1, c2, c3, c4 = st.columns(4)
+
+c1.metric(
+    "Decision",
+    ai.get("decision", "NA")
 )
 
-analyze = st.sidebar.button("Analyze")
+c2.metric(
+    "Confidence",
+    f"{ai.get('confidence',0)}%"
+)
 
-# ==========================
-# API CALL
-# ==========================
+c3.metric(
+    "Score",
+    ai.get("score", 0)
+)
 
-if analyze:
+c4.metric(
+    "Risk Reward",
+    ai.get("risk_reward", 0)
+)
 
-    with st.spinner("Running AI Analysis..."):
+st.markdown("### Trade Setup")
 
-        try:
+c1, c2, c3, c4 = st.columns(4)
 
-            response = requests.get(
-                f"{backend_url}/{symbol.upper()}"
+c1.metric(
+    "Entry",
+    ai.get("entry_price", 0)
+)
+
+c2.metric(
+    "Stop Loss",
+    ai.get("stop_loss", 0)
+)
+
+c3.metric(
+    "Target",
+    ai.get("target_price", 0)
+)
+
+c4.metric(
+    "Holding Days",
+    ai.get("holding_days", 0)
+)
+
+st.info(
+    ai.get(
+        "reasoning",
+        "No reasoning available"
+    )
+)
+
+# =====================================================
+# TECHNICAL SIGNAL
+# =====================================================
+
+st.markdown("---")
+st.header("📊 Technical Signal")
+
+c1, c2, c3 = st.columns(3)
+
+c1.metric(
+    "Signal",
+    technical.get("signal", "NA")
+)
+
+c2.metric(
+    "Score",
+    technical.get(
+        "composite_score",
+        0
+    )
+)
+
+c3.metric(
+    "Confidence",
+    technical.get(
+        "confidence",
+        0
+    )
+)
+
+reasoning = technical.get("reasoning", [])
+
+if reasoning:
+
+    st.subheader("Technical Reasoning")
+
+    for item in reasoning:
+        st.success(item)
+
+# =====================================================
+# PRICE
+# =====================================================
+
+st.markdown("---")
+st.header("💹 Price Overview")
+
+price = indicator.get("price", {})
+
+c1, c2, c3, c4 = st.columns(4)
+
+c1.metric(
+    "Open",
+    price.get("open", 0)
+)
+
+c2.metric(
+    "High",
+    price.get("high", 0)
+)
+
+c3.metric(
+    "Low",
+    price.get("low", 0)
+)
+
+c4.metric(
+    "Close",
+    price.get("close", 0)
+)
+
+# =====================================================
+# TREND
+# =====================================================
+
+st.markdown("---")
+st.header("📈 Trend Indicators")
+
+trend = indicator.get("trend", {})
+
+if trend:
+
+    trend_df = pd.DataFrame(
+        list(trend.items()),
+        columns=["Indicator", "Value"]
+    )
+
+    st.dataframe(
+        trend_df,
+        use_container_width=True
+    )
+
+# =====================================================
+# MOMENTUM
+# =====================================================
+
+st.markdown("---")
+st.header("⚡ Momentum Indicators")
+
+momentum = indicator.get(
+    "momentum",
+    {}
+)
+
+if momentum:
+
+    momentum_df = pd.DataFrame(
+        list(momentum.items()),
+        columns=["Indicator", "Value"]
+    )
+
+    st.dataframe(
+        momentum_df,
+        use_container_width=True
+    )
+
+# =====================================================
+# VOLATILITY
+# =====================================================
+
+st.markdown("---")
+st.header("🌊 Volatility")
+
+volatility = indicator.get(
+    "volatility",
+    {}
+)
+
+if volatility:
+
+    vol_df = pd.DataFrame(
+        list(volatility.items()),
+        columns=["Indicator", "Value"]
+    )
+
+    st.dataframe(
+        vol_df,
+        use_container_width=True
+    )
+
+# =====================================================
+# VOLUME
+# =====================================================
+
+st.markdown("---")
+st.header("📦 Volume Indicators")
+
+volume = indicator.get(
+    "volume",
+    {}
+)
+
+if volume:
+
+    volume_df = pd.DataFrame(
+        list(volume.items()),
+        columns=["Indicator", "Value"]
+    )
+
+    st.dataframe(
+        volume_df,
+        use_container_width=True
+    )
+
+# =====================================================
+# SUPPORT RESISTANCE
+# =====================================================
+
+st.markdown("---")
+st.header("🎯 Support & Resistance")
+
+levels = indicator.get(
+    "levels",
+    {}
+)
+
+if levels:
+
+    level_df = pd.DataFrame(
+        list(levels.items()),
+        columns=["Level", "Value"]
+    )
+
+    st.dataframe(
+        level_df,
+        use_container_width=True
+    )
+
+# =====================================================
+# FINANCIAL RATIOS
+# =====================================================
+
+st.markdown("---")
+st.header("🏦 Financial Ratios")
+
+if ratios:
+
+    ratio_df = pd.DataFrame(
+        list(ratios.items()),
+        columns=["Ratio", "Value"]
+    )
+
+    st.dataframe(
+        ratio_df,
+        use_container_width=True,
+        height=450
+    )
+
+# =====================================================
+# FINANCIAL STATEMENTS
+# =====================================================
+
+st.markdown("---")
+st.header("📑 Financial Statements")
+
+if financials:
+
+    if isinstance(financials, dict):
+
+        financial_df = pd.DataFrame(
+            list(financials.items()),
+            columns=[
+                "Metric",
+                "Value"
+            ]
+        )
+
+        st.dataframe(
+            financial_df,
+            use_container_width=True,
+            height=500
+        )
+
+# =====================================================
+# NEWS SENTIMENT
+# =====================================================
+
+st.markdown("---")
+st.header("📰 News Sentiment")
+
+c1, c2, c3 = st.columns(3)
+
+c1.metric(
+    "Overall Sentiment",
+    news.get(
+        "overall_sentiment",
+        "NA"
+    )
+)
+
+c2.metric(
+    "Score",
+    news.get(
+        "sentiment_score",
+        0
+    )
+)
+
+c3.metric(
+    "Confidence",
+    news.get(
+        "confidence",
+        0
+    )
+)
+
+summary = news.get("summary")
+
+if summary:
+    st.write(summary)
+
+news_list = news.get(
+    "news",
+    []
+)
+
+if news_list:
+
+    st.subheader("Latest News")
+
+    for item in news_list:
+
+        title = item.get(
+            "title",
+            "News"
+        )
+
+        with st.expander(title):
+
+            st.write(
+                "**Source:**",
+                item.get(
+                    "source",
+                    "Unknown"
+                )
             )
 
-            result = response.json()
-
-            data = result["data"]
-
-            news = data["news_sentiment"]
-
-            # ==================================
-            # TOP SUMMARY
-            # ==================================
-
-            col1, col2, col3 = st.columns(3)
-
-            col1.metric(
-                "Overall Sentiment",
-                news["overall_sentiment"]
+            st.write(
+                "**Sentiment:**",
+                item.get(
+                    "sentiment",
+                    "Neutral"
+                )
             )
 
-            col2.metric(
-                "Sentiment Score",
-                round(news["sentiment_score"], 2)
+            st.write(
+                item.get(
+                    "summary",
+                    ""
+                )
             )
 
-            col3.metric(
-                "Confidence",
-                f"{news['confidence']*100:.1f}%"
-            )
+            url = item.get("url")
 
-            st.divider()
-
-            # ==================================
-            # BUY SELL HOLD
-            # ==================================
-
-            decision = news["decision"]
-
-            if decision == "BUY":
-                st.markdown(
-                    f"""
-                    <div class="buy-box">
-                    <h1>🟢 BUY</h1>
-                    <h3>Confidence: {news['confidence']*100:.1f}%</h3>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
+            if url:
+                st.link_button(
+                    "Open Article",
+                    url
                 )
 
-            elif decision == "SELL":
-                st.markdown(
-                    f"""
-                    <div class="sell-box">
-                    <h1>🔴 SELL</h1>
-                    <h3>Confidence: {news['confidence']*100:.1f}%</h3>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+# =====================================================
+# RAW JSON
+# =====================================================
 
-            else:
-                st.markdown(
-                    f"""
-                    <div class="hold-box">
-                    <h1>🟡 HOLD</h1>
-                    <h3>Confidence: {news['confidence']*100:.1f}%</h3>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+st.markdown("---")
 
-            st.divider()
-
-            # ==================================
-            # SUMMARY
-            # ==================================
-
-            st.subheader("📰 AI News Summary")
-
-            st.info(news["summary"])
-
-            st.divider()
-
-            # ==================================
-            # NEWS TABLE
-            # ==================================
-
-            st.subheader("Recent News Analysis")
-
-            rows = []
-
-            for item in news["news"]:
-
-                rows.append({
-                    "Title": item.get("title", ""),
-                    "Sentiment": item.get("sentiment", ""),
-                    "Summary": item.get("summary", "")
-                })
-
-            df = pd.DataFrame(rows)
-
-            st.dataframe(
-                df,
-                use_container_width=True
-            )
-
-            st.divider()
-
-            # ==================================
-            # PIE CHART
-            # ==================================
-
-            st.subheader("Sentiment Distribution")
-
-            fig = go.Figure(
-                data=[
-                    go.Pie(
-                        labels=[
-                            "Positive",
-                            "Negative",
-                            "Neutral"
-                        ],
-                        values=[
-                            news["positive_news_count"],
-                            news["negative_news_count"],
-                            news["neutral_news_count"]
-                        ]
-                    )
-                ]
-            )
-
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
-
-            st.divider()
-
-            # ==================================
-            # BULLISH / BEARISH
-            # ==================================
-
-            col1, col2 = st.columns(2)
-
-            with col1:
-
-                st.subheader("🐂 Bullish Factors")
-
-                bullish = []
-
-                for n in news["news"]:
-                    bullish.extend(
-                        n.get("bullish_factors", [])
-                    )
-
-                for b in bullish:
-                    st.success(b)
-
-            with col2:
-
-                st.subheader("🐻 Bearish Factors")
-
-                bearish = []
-
-                for n in news["news"]:
-                    bearish.extend(
-                        n.get("bearish_factors", [])
-                    )
-
-                for b in bearish:
-                    st.error(b)
-
-        except Exception as e:
-
-            st.error(str(e))
+with st.expander("🔍 Raw API Response"):
+    st.json(data)

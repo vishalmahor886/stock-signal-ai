@@ -5,7 +5,7 @@ load_dotenv()
 
 def gemini_model():
     model = GoogleGenerativeAI(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-2.5-flash",
         google_api_key=os.getenv("GEMINI_API_KEY")
     )
     return model
