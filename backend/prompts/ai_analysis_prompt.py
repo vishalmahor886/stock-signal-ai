@@ -112,7 +112,10 @@ Risk reward must be >= 1:2
 =================================================
 OUTPUT JSON FORMAT (STRICT)
 =================================================
-{
+=================================================
+OUTPUT JSON FORMAT (STRICT)
+=================================================
+{{
   "decision": "BUY|SELL|HOLD|STRONG BUY|STRONG SELL",
   "confidence": 0,
   "score": 0,
@@ -125,5 +128,5 @@ OUTPUT JSON FORMAT (STRICT)
   "fundamental_score": 0,
   "sentiment_score": 0,
   "reasoning": "string"
-}
+}}
 """

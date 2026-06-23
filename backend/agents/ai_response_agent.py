@@ -110,7 +110,7 @@ def ai_response_agent(state: TradingState):
         llm = agentic_llm()
         ai_signal = llm.invoke(prompt)
 
-        print("RAW LLM OUTPUT:\n", ai_signal.content)  # 🔥 IMPORTANT DEBUG
+        print("RAW LLM OUTPUT:\n", ai_signal.content)
 
         ai_response = extract_json(ai_signal.content)
 
