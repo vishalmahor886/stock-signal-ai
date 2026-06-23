@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.api.routers.signal_api import router as signal_router
+from api.routers.signal_api import router as signal_router
 from backend.services.financial_statement_service import get_financial_statement_for_symbol
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
