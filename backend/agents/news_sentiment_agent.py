@@ -1,7 +1,8 @@
 from backend.services.news_service import get_news_sentiment_for_symbol
-from backend.ai_models.hf_ai_model import agentic_llm
+#from backend.ai_models.hf_ai_model import agentic_llm
 from backend.prompts.news_prompt import NEWS_PROMPT
 from backend.builder.state import TradingState
+from backend.ai_models.groq_ai_model import groq_model1
 import json
 
 def news_sentiment_agent(state:TradingState):
@@ -15,7 +16,7 @@ def news_sentiment_agent(state:TradingState):
         if not news:
             return {"news_sentiment": []}
 
-        llm_model= agentic_llm()
+        llm_model= groq_model1()
 
         prompts=NEWS_PROMPT.format(
             symbol=symbol,

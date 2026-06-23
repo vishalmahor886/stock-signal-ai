@@ -1,6 +1,6 @@
 from backend.builder.state import TradingState
 from backend.prompts.ai_analysis_prompt import ANALYSIS_PROMPT
-from backend.ai_models.hf_ai_model import agentic_llm
+from backend.ai_models.groq_ai_model import groq_model2
 import json
 import re
 
@@ -107,7 +107,7 @@ def ai_response_agent(state: TradingState):
             ratio_text=ratio_text
         )
 
-        llm = agentic_llm()
+        llm = groq_model2()
         ai_signal = llm.invoke(prompt)
 
         ai_response = extract_json(ai_signal.content)
